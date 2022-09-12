@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.children
-import androidx.core.view.forEachIndexed
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -32,9 +31,8 @@ class MainActivity : AppCompatActivity() {
                 .substring(0..Random.nextInt(15, 70))
         }
 
-        val adapter = CustomAdapter(strings)
         binding.list.layoutManager = LinearLayoutManager(this)
-        binding.list.adapter = adapter
+        binding.list.adapter = CustomAdapter(strings)
     }
 }
 
@@ -80,8 +78,7 @@ class DynamicLayout @JvmOverloads constructor(
         val contentWidth = widthSize - paddingStart - paddingEnd
 
         var isLargeTitle = false
-        var totalHeight = 10
-        forEachIndexed { index, child ->
+        val height = children.foldIndexed(0) { index, height, child ->
             child.measure(
                 MeasureSpec.makeMeasureSpec(contentWidth, MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
@@ -91,30 +88,25 @@ class DynamicLayout @JvmOverloads constructor(
                 isLargeTitle = true
             }
 
-            child.isVisible = if (1 == index && isLargeTitle) {
-                false
-            } else {
-                totalHeight += child.measuredHeight
-                true
-            }
+            val isVisible = (1 != index || !isLargeTitle)
+            child.isVisible = isVisible
+            if (isVisible) height + child.measuredHeight else height
         }
 
-        val heightSize = resolveSize(totalHeight + paddingTop + paddingBottom, heightMeasureSpec)
+        val heightSize = resolveSize(height + paddingTop + paddingBottom, heightMeasureSpec)
 
         setMeasuredDimension(widthSize, heightSize)
     }
 
     override fun onLayout(p0: Boolean, p1: Int, p2: Int, p3: Int, p4: Int) {
-        var topPosition = 0
-        for (child in children) {
+        children.fold(0) { top, child ->
             child.layout(
                 paddingStart,
-                paddingTop + topPosition,
+                paddingTop + top,
                 paddingStart + child.measuredWidth,
-                paddingTop + topPosition + child.measuredHeight)
-            if (child.isVisible) {
-                topPosition += child.measuredHeight
-            }
+                paddingTop + top + child.measuredHeight
+            )
+            if (child.isVisible) top + child.measuredHeight else top
         }
     }
 }
