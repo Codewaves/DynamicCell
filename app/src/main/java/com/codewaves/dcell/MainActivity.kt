@@ -13,6 +13,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.codewaves.dcell.databinding.ActivityMainBinding
+import com.codewaves.dcell.databinding.ItemTestBinding
 import kotlin.random.Random
 
 
@@ -39,29 +40,20 @@ class MainActivity : AppCompatActivity() {
 class CustomAdapter(private val dataSet: List<String>) :
     RecyclerView.Adapter<CustomAdapter.ViewHolder>() {
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val textView1: TextView
-        val textView2: TextView
-        val textView3: TextView
-
-        init {
-            textView1 = view.findViewById(R.id.text1)
-            textView2 = view.findViewById(R.id.text2)
-            textView3 = view.findViewById(R.id.text3)
-        }
-    }
+    class ViewHolder(val bindings: ItemTestBinding) : RecyclerView.ViewHolder(bindings.root)
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.item_test, viewGroup, false)
-
-        return ViewHolder(view)
+        val bindings = ItemTestBinding
+            .inflate(LayoutInflater.from(viewGroup.context), viewGroup, false)
+        return ViewHolder(bindings)
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        viewHolder.textView1.text = dataSet[position]
-        viewHolder.textView2.text = "Optional text"
-        viewHolder.textView3.text = "Bottom text"
+        with(viewHolder.bindings) {
+            text1.text = dataSet[position]
+            text2.text = "Optional text"
+            text3.text = "Bottom text"
+        }
     }
 
     override fun getItemCount() = dataSet.size
